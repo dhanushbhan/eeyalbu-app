@@ -3,7 +3,7 @@ import mapboxgl from "mapbox-gl";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-export default function MapView() {
+export default function MapView({ onMouseMove }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
 
@@ -72,14 +72,48 @@ export default function MapView() {
       "top-left"
     );
 
-  
+    mapInstance.on("mousemove", (e) => {
+      const { lng, lat } = e.lngLat;
+
+      if (onMouseMove) {
+        onMouseMove({ lng, lat });
+      }
+    });
 
   }, []);
 
   return (
+  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    
+    {/* Map */}
     <div
       ref={mapContainer}
-      style={{ width: "100%", height: "100vh" }}
+      style={{ width: "100%", height: "100%" }}
     />
-  );
+
+    {/* Legend */}
+    <div
+      style={{
+        position: "absolute",
+        bottom: "80px",   // 👈 sits above scale bar
+        left: "10px",
+        background: "rgba(0,0,0,0.6)",
+        padding: "8px",
+        borderRadius: "8px",
+        fontSize: "10px",
+        pointerEvents: "none", // 👈 non-clickable
+        maxHeight: "600px",
+        overflow: "hidden"
+      }}
+    >
+      <img 
+          src= "/legend.png"
+          alt="Map Legend" 
+          className="legend-image"
+          style={{ width: "150px", height: "auto", marginTop: "0px", marginLeft: "0px" }}
+        />
+    </div>
+
+  </div>
+);
 }
