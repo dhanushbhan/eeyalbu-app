@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export default function MapView({ onMouseMove }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const lastCallTime = useRef(0);
 
   useEffect(() => {
     // prevent double initialization
@@ -73,11 +75,21 @@ export default function MapView({ onMouseMove }) {
     );
 
     mapInstance.on("mousemove", (e) => {
-      const { lng, lat } = e.lngLat;
+      const now = Date.now();
 
-      if (onMouseMove) {
-        onMouseMove({ lng, lat });
-      }
+      // limit to ~20 requests per second
+      if (now - lastCallTime.current < 100) return;
+
+      lastCallTime.current = now;
+      const { lng, lat } = e.lngLat;
+      
+      fetch(`http://127.0.0.1:8000/sample?lat=${lat}&lng=${lng}`)
+        .then(res => res.json())
+        .then(data => {
+          if (onMouseMove && data.cca1 !== null) {
+        onMouseMove(data);
+      }})
+      .catch(() => {});
     });
 
   }, []);

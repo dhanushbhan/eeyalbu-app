@@ -3,7 +3,7 @@ export default function CCAPlot({ mouseCoords }) {
     if (mouseCoords) {
         console.log("Mouse in CCAPlot:", mouseCoords);
     };
-    
+
   const CLASS_COLORS = {
     0: "#58a8a8", 1: "#62c400", 2: "#e08421", 3: "#389540",
     4: "#c5ea4c", 5: "#28cea4", 6: "#faff5d", 7: "#ead03f",
@@ -114,7 +114,35 @@ export default function CCAPlot({ mouseCoords }) {
             fill={CLASS_COLORS[p.id]}
           />
         ))}
+        {mouseCoords && mouseCoords.cca1 !== undefined && (
+            (() => {
+                const x = scaleX(mouseCoords.cca1);
+                const y = scaleY(mouseCoords.cca2);
 
+                return (
+                <>
+                    {/* Glow */}
+                    <circle
+                    cx={x}
+                    cy={y}
+                    r="3.5"
+                    fill="white"
+                    opacity="0.3"
+                    />
+
+                    {/* Main dot */}
+                    <circle
+                    cx={x}
+                    cy={y}
+                    r="2"
+                    fill="#888888"
+                    stroke="white"
+                    strokeWidth="0.5"
+                    />
+                </>
+                );
+            })()
+            )}
       </svg>
 
     </div>
