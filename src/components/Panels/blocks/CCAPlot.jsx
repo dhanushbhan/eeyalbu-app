@@ -1,8 +1,9 @@
-export default function CCAPlot({ mouseCoords }) {
+import { observer } from "mobx-react-lite";
+import { useStore } from "../../../stores/useStore";
 
-    if (mouseCoords) {
-        console.log("Mouse in CCAPlot:", mouseCoords);
-    };
+const CCAPlot = observer(function CCAPlot() {
+  const { appStore } = useStore();
+  const mouseCoords = appStore.mouseCoords;
 
   const CLASS_COLORS = {
     0: "#58a8a8", 1: "#62c400", 2: "#e08421", 3: "#389540",
@@ -12,7 +13,6 @@ export default function CCAPlot({ mouseCoords }) {
     16: "#d95980", 17: "#0e70f0", 18: "#dcdbe1", 19: "#c4ff01"
   };
 
-  // 📍 Class centroids
   const classPoints = [
     { id: 0, x: -1.26, y: -0.50 },
     { id: 1, x: -1.04, y: -0.05 },
@@ -36,7 +36,6 @@ export default function CCAPlot({ mouseCoords }) {
     { id: 19, x: -1.90, y: -0.74 }
   ];
 
-  // 🌿 Env vectors
   const vectors = [
     { name: "elev", x: 0.98, y: 0.13 },
     { name: "slope", x: -0.10, y: 0.22 },
@@ -48,103 +47,61 @@ export default function CCAPlot({ mouseCoords }) {
     { name: "bulk", x: 0.47, y: -0.18 }
   ];
 
-  // 📏 bounds
-    const allX = classPoints.map(p => p.x);
-    const allY = classPoints.map(p => p.y);
+  const allX = classPoints.map(p => p.x);
+  const allY = classPoints.map(p => p.y);
+  const maxAbsX = Math.max(...allX.map(v => Math.abs(v)));
+  const maxAbsY = Math.max(...allY.map(v => Math.abs(v)));
+  const margin = 5;
 
-    const maxAbsX = Math.max(...allX.map(v => Math.abs(v)));
-    const maxAbsY = Math.max(...allY.map(v => Math.abs(v)));
-
-    const margin = 5; // percent padding
-
-    const scaleX = x =>
-    margin + ((x + maxAbsX) / (2 * maxAbsX)) * (100 - 2 * margin);
-
-    const scaleY = y =>
-        100 - (
-            margin + ((y + maxAbsY) / (2 * maxAbsY)) * (100 - 2 * margin)
-        );
+  const scaleX = x => margin + ((x + maxAbsX) / (2 * maxAbsX)) * (100 - 2 * margin);
+  const scaleY = y => 100 - (margin + ((y + maxAbsY) / (2 * maxAbsY)) * (100 - 2 * margin));
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-
-      <div style={{ fontSize: "12px", marginBottom: "4px" }}>
-        CCA Space
-      </div>
+    <div className="chart-shell">
+      <div className="data-title">CCA Space</div>
 
       <svg
+        className="chart-surface"
         width="100%"
         height="90%"
         viewBox="0 0 100 100"
-        style={{ background: "rgba(255,255,255,0.05)", borderRadius: "6px", overflow: "hidden"  }}
       >
-
-        {/* Origin */}
         <circle cx={scaleX(0)} cy={scaleY(0)} r="1.5" fill="white" />
 
-        {/* VECTORS */}
         {vectors.map((v, i) => (
           <g key={i}>
             <line
-              x1={scaleX(0)}
-              y1={scaleY(0)}
-              x2={scaleX(v.x)}
-              y2={scaleY(v.y)}
-              stroke="white"
-              strokeWidth="0.6"
+              x1={scaleX(0)} y1={scaleY(0)}
+              x2={scaleX(v.x)} y2={scaleY(v.y)}
+              stroke="white" strokeWidth="0.6"
             />
-            <text
-              x={scaleX(v.x)}
-              y={scaleY(v.y)}
-              fontSize="3"
-              fill="white"
-            >
+            <text x={scaleX(v.x)} y={scaleY(v.y)} fontSize="3" fill="white">
               {v.name}
             </text>
           </g>
         ))}
 
-        {/* CLASS POINTS */}
         {classPoints.map((p) => (
           <circle
             key={p.id}
-            cx={scaleX(p.x)}
-            cy={scaleY(p.y)}
-            r="1.5"
-            fill={CLASS_COLORS[p.id]}
+            cx={scaleX(p.x)} cy={scaleY(p.y)}
+            r="1.5" fill={CLASS_COLORS[p.id]}
           />
         ))}
-        {mouseCoords && mouseCoords.cca1 !== undefined && (
-            (() => {
-                const x = scaleX(mouseCoords.cca1);
-                const y = scaleY(mouseCoords.cca2);
 
-                return (
-                <>
-                    {/* Glow */}
-                    <circle
-                    cx={x}
-                    cy={y}
-                    r="3.5"
-                    fill="white"
-                    opacity="0.3"
-                    />
-
-                    {/* Main dot */}
-                    <circle
-                    cx={x}
-                    cy={y}
-                    r="2"
-                    fill="#888888"
-                    stroke="white"
-                    strokeWidth="0.5"
-                    />
-                </>
-                );
-            })()
-            )}
+        {mouseCoords && mouseCoords.cca1 !== undefined && (() => {
+          const x = scaleX(mouseCoords.cca1);
+          const y = scaleY(mouseCoords.cca2);
+          return (
+            <>
+              <circle cx={x} cy={y} r="3.5" fill="white" opacity="0.3" />
+              <circle cx={x} cy={y} r="2" fill="#888888" stroke="white" strokeWidth="0.5" />
+            </>
+          );
+        })()}
       </svg>
-
     </div>
   );
-}
+});
+
+export default CCAPlot;

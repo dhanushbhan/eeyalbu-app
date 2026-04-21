@@ -1,8 +1,14 @@
-export default function GraphBlock({ title, data, selected }) {
+import { observer } from "mobx-react-lite";
+import { useStore } from "../../../stores/useStore";
+
+const GraphBlock = observer(function GraphBlock({ title, data }) {
+  const { explorerStore } = useStore();
+  const selected = explorerStore.selectedClasses;
+
   if (!data || selected.length === 0) {
     return (
-      <div style={{ padding: "6px" }}>
-        <div style={{ fontSize: "12px" }}>{title}</div>
+      <div className="data-card data-card--empty">
+        <div className="data-title data-muted">{title}</div>
       </div>
     );
   }
@@ -16,53 +22,29 @@ export default function GraphBlock({ title, data, selected }) {
   };
 
   return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.05)",
-        borderRadius: "8px",
-        padding: "6px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden"
-      }}
-    >
-      {/* Title */}
-      <div style={{ fontSize: "12px", marginBottom: "4px" }}>
-        {title}
-      </div>
+    <div className="data-card">
+      <div className="data-title">{title}</div>
 
-      {/* Vertical Distribution */}
-      <div style={{ flex: 1, position: "relative", paddingLeft: "30px",   // 👈 space for Y label
-           paddingBottom: "20%"  // 👈 space for X label 
-
-      }}>
+      <div className="graph-area">
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {selected.map((cls) => {
+          {selected.map((cls) => {
             const classData = data[cls.id];
             if (!classData) return null;
 
             const counts = classData.counts;
             const total = counts.reduce((a, b) => a + b, 0);
-            
-
             const binCount = counts.length;
-
-            // Convert to points
-           // Normalize densities
             const densities = counts.map(c => c / total);
             const maxDensity = Math.max(...densities);
 
             const points = densities.map((d, i) => {
-                const x = (d / maxDensity) * 85; // 👈 FULL WIDTH USAGE
-
-                const y = 100 - (i / (binCount - 1)) * 70;
-
-                return `${x},${y}`;
+              const x = (d / maxDensity) * 85;
+              const y = 100 - (i / (binCount - 1)) * 70;
+              return `${x},${y}`;
             });
 
             return (
-                <polyline
+              <polyline
                 key={cls.id}
                 points={points.join(" ")}
                 fill="none"
@@ -71,79 +53,19 @@ export default function GraphBlock({ title, data, selected }) {
                 strokeOpacity="1"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                />
+              />
             );
-            })}
+          })}
         </svg>
-            {/* Axis Labels */}
-            {/* Y max (top) */}
-            <div
-                style={{
-                position: "absolute",
-                top: "15px",
-                left: "2px",
-                fontSize: "10px",
-                opacity: 0.7
-                }}
-            >
-                max
-            </div>
 
-            {/* Origin (bottom-left) */}
-            <div
-                style={{
-                position: "absolute",
-                bottom: "18px",
-                left: "2px",
-                fontSize: "10px",
-                opacity: 0.7
-                }}
-            >
-                min
-            </div>
-
-            {/* X max (bottom-right) */}
-            <div
-                style={{
-                position: "absolute",
-                bottom: "18px",
-                right: "2px",
-                fontSize: "10px",
-                opacity: 0.7
-                }}
-            >
-                max
-            </div>
-            <div
-                style={{
-                position: "absolute",
-                top: "50%",
-                left: "-10px",
-                transform: "translateY(-50%) rotate(-90deg)",
-                transformOrigin: "center",
-                fontSize: "10px",
-                opacity: 0.7,
-                whiteSpace: "nowrap"
-            }}
-            >
-            {title}
-            </div>
-            <div
-            style={{
-                position: "absolute",
-                bottom: "18px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                fontSize: "10px",
-                opacity: 0.7
-            }}
-            >
-            Density
-            </div>
-            </div>
-            
-
-
-       </div>
+        <div className="axis-label axis-label--top">max</div>
+        <div className="axis-label axis-label--bottom-left">min</div>
+        <div className="axis-label axis-label--bottom-right">max</div>
+        <div className="axis-label axis-label--vertical">{title}</div>
+        <div className="axis-label axis-label--horizontal">Density</div>
+      </div>
+    </div>
   );
-}
+});
+
+export default GraphBlock;

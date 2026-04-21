@@ -1,46 +1,32 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect } from "react";
+import { observer } from "mobx-react-lite";
 import Dropdown from "./blocks/Dropdown";
 import GraphBlock from "./blocks/GraphBlock";
+import { useStore } from "../../stores/useStore";
 
-export default function ExplorerPanel() {
-  const [selectedClasses, setSelectedClasses] = useState([]);
-  const [histData, setHistData] = useState(null);
+const ExplorerPanel = observer(function ExplorerPanel() {
+  const { explorerStore } = useStore();
 
-  // Load JSON once
   useEffect(() => {
-    fetch("/histograms.json")
-      .then((res) => res.json())
-      .then((data) => setHistData(data));
-  }, []);
+    explorerStore.loadHistData();
+  }, [explorerStore]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      
-      {/* Dropdown */}
-      <Dropdown onChange={setSelectedClasses} />
+    <div className="panel-content">
+      <Dropdown />
 
-      {/* Graph Grid */}
-      <div
-        style={{
-          flex: 1,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridTemplateRows: "repeat(4, minmax(0, 1fr))",
-          overflow: "hidden",
-          gap: "6px",
-          marginTop: "6px"
-        }}
-      >
-        <GraphBlock title="Elevation" data={histData?.elev} selected={selectedClasses} />
-        <GraphBlock title="Temperature" data={histData?.MATemp} selected={selectedClasses} />
-        <GraphBlock title="Precipitation" data={histData?.MAPrec} selected={selectedClasses} />
-        <GraphBlock title="Slope" data={histData?.slope} selected={selectedClasses} />
-        <GraphBlock title="Snow Days" data={histData?.snow} selected={selectedClasses} />
-        <GraphBlock title="SOC" data={histData?.soc} selected={selectedClasses} />
-        <GraphBlock title="Soil Nitrogen" data={histData?.nitrogen} selected={selectedClasses} />
-        <GraphBlock title="Bulk Density" data={histData?.bulk} selected={selectedClasses} />
+      <div className="explorer-grid">
+        <GraphBlock title="Elevation" data={explorerStore.histData?.elev} />
+        <GraphBlock title="Temperature" data={explorerStore.histData?.MATemp} />
+        <GraphBlock title="Precipitation" data={explorerStore.histData?.MAPrec} />
+        <GraphBlock title="Slope" data={explorerStore.histData?.slope} />
+        <GraphBlock title="Snow Days" data={explorerStore.histData?.snow} />
+        <GraphBlock title="SOC" data={explorerStore.histData?.soc} />
+        <GraphBlock title="Soil Nitrogen" data={explorerStore.histData?.nitrogen} />
+        <GraphBlock title="Bulk Density" data={explorerStore.histData?.bulk} />
       </div>
-
     </div>
   );
-}
+});
+
+export default ExplorerPanel;

@@ -5,19 +5,18 @@ import PanelContainer from "./components/Panels/PanelContainer";
 import HomePanel from "./components/Panels/HomePanel";
 import ExplorerPanel from "./components/Panels/ExplorerPanel";
 import TransectPanel from "./components/Panels/TransectPanel";
+import { observer } from "mobx-react-lite";
+import { useStore } from "./stores/useStore";
 
-import { useState } from "react";
-
-function App() {
-  const [mode, setMode] = useState("home");
-  const [mouseCoords, setMouseCoords] = useState(null);
+const App = observer(function App() {
+  const { appStore } = useStore();
 
   const renderPanel = () => {
-    switch (mode) {
+    switch (appStore.mode) {
       case "explorer":
         return <ExplorerPanel />;
       case "transect":
-        return <TransectPanel mouseCoords={mouseCoords} />;
+        return <TransectPanel />;
       case "home":
       default:
         return <HomePanel />;
@@ -25,18 +24,16 @@ function App() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      
-      <MapView onMouseMove={setMouseCoords} />
+    <div className="app-shell">
+      <MapView />
 
-      <OptionsMenu onSelect={setMode} />
+      <OptionsMenu />
 
       <PanelContainer>
         {renderPanel()}
       </PanelContainer>
-
     </div>
   );
-}
+});
 
 export default App;
